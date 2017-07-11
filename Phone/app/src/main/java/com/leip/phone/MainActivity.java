@@ -7,22 +7,23 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.jph.takephoto.app.TakePhoto;
 import com.jph.takephoto.app.TakePhotoImpl;
 import com.jph.takephoto.model.InvokeParam;
 import com.jph.takephoto.model.TContextWrap;
-import com.jph.takephoto.model.TImage;
 import com.jph.takephoto.model.TResult;
 import com.jph.takephoto.permission.InvokeListener;
 import com.jph.takephoto.permission.PermissionManager;
 import com.jph.takephoto.permission.TakePhotoInvocationHandler;
+import com.leip.phone.help.TImageWatermark;
 import com.leip.phone.help.WatermarkImageImpl;
 import com.leip.phone.help.WatermarkListener;
 
@@ -37,12 +38,14 @@ public class MainActivity extends AppCompatActivity implements TakePhoto.TakeRes
     public static String TAG = "MainActivity";
     private Context context;
 
+    private ImageView imageView;
+
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         getTakePhoto().onCreate(savedInstanceState);
-        super.onCreate(savedInstanceState, persistentState);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        imageView = (ImageView) findViewById(R.id.img);
         context = this;
     }
 
@@ -58,16 +61,19 @@ public class MainActivity extends AppCompatActivity implements TakePhoto.TakeRes
     @Override
     public void takeSuccess(TResult result) {
         String originalPath = result.getImage().getOriginalPath();
-        ArrayList<TImage> tImages = new ArrayList<>();
-        tImages.add(TImage.of(originalPath, TImage.FromType.OTHER));
+        ArrayList<TImageWatermark> tImages = new ArrayList<>();
+        tImages.add(TImageWatermark.of(originalPath, TImageWatermark.FromType.OTHER));
+
         WatermarkImageImpl.of(context, tImages, new WatermarkListener.WatermarkResultListener() {
             @Override
-            public void onWatermarkSuccess(ArrayList<TImage> images) {
-
+            public void onWatermarkSuccess(ArrayList<TImageWatermark> images) {
+                Glide.with(context)
+                        .load(images.get(0).getWatermarkPath())
+                        .into(imageView);
             }
 
             @Override
-            public void onWatermarkFailed(ArrayList<TImage> images, String msg) {
+            public void onWatermarkFailed(ArrayList<TImageWatermark> images, String msg) {
 
             }
         }).watermark();

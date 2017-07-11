@@ -33,7 +33,10 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
     compile 'com.jph.takephoto:takephoto_library:4.0.3'
+    compile 'com.github.bumptech.glide:glide:3.8.0'
 //    compile 'com.leipeng.bridgeweb:1.0.0-SNAPSHOT'
     compile files('libs/bridge-1.0.0-20170423.045130-1-sources.jar')
     compile(name:'bridge-1.0.0-20170423.045130-1',ext:'aar')
+
+    compile 'br.com.duanniston:watermarklib:0.0.4'
 }

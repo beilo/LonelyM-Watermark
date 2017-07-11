@@ -4,8 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
 
-import com.jph.takephoto.model.TImage;
+import com.leip.phone.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,19 +18,17 @@ import java.util.ArrayList;
  */
 
 public class WatermarkImageImpl implements WatermarkListener {
-    private ArrayList<TImage> images;
+    private ArrayList<TImageWatermark> images;
     private WatermarkListener.WatermarkResultListener listener;
 
-    private String filePath;
     private Context context;
 
-    public static WatermarkListener of(Context context, ArrayList<TImage> images, WatermarkListener.WatermarkResultListener listener) {
+    public static WatermarkListener of(Context context, ArrayList<TImageWatermark> images, WatermarkListener.WatermarkResultListener listener) {
         return new WatermarkImageImpl(context, images, listener);
     }
 
 
-    public WatermarkImageImpl(Context context, ArrayList<TImage> images, WatermarkResultListener listener) {
-        this.filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM + "_Watermark_").getPath();
+    public WatermarkImageImpl(Context context, ArrayList<TImageWatermark> images, WatermarkResultListener listener) {
         this.context = context;
         this.images = images;
         this.listener = listener;
@@ -39,24 +40,43 @@ public class WatermarkImageImpl implements WatermarkListener {
         watermark(images.get(0));
     }
 
-    private void watermark(final TImage image) {
+    private void watermark(final TImageWatermark image) {
+        if (TextUtils.isEmpty(image.getOriginalPath())) {
+            continueWatermark(image, false);
+            return;
+        }
+        File file = new File(image.getOriginalPath());
+        if (file == null || !file.exists() || !file.isFile()) {
+            continueWatermark(image, false);
+            return;
+        }
         // 创建备份文件用于保存水印
         String[] split = image.getOriginalPath().split("/");
         final String imgName = split[split.length - 1];
         String picFileFullName = image.getOriginalPath();
-        long fileDate = new File(picFileFullName).lastModified();
-        String fileLastModified = DateUtil.currentTime4String(fileDate, DateUtil.DATE_FORMAT_STR4);
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        // options.inSampleSize = 2;
-        Bitmap bitmap = BitmapFactory.decodeFile(picFileFullName,options);
-        Bitmap watermark = ImageUtil.createWatermark(context, bitmap, fileLastModified, 0);//添加水印
-        FileUtils.saveBitmapFile(watermark, filePath + imgName);
+        Bitmap bitmap = BitmapFactory.decodeFile(picFileFullName);
+        // 添加水印
+        LayoutInflater mInflater = LayoutInflater.from(context);
+        View viewLayout = mInflater.inflate(R.layout.view_item, null);
 
-        continueWatermark(image);
+
+        Bitmap watermark = WaterMarkUtil.of(context).createViewWatermark(bitmap,viewLayout);//添加水印
+//        Bitmap watermark = WaterMarkUtil.of(context).createWatermark(bitmap, "hahahah", "11111111", 0);//添加水印
+        // 保存图片
+        File fileWater = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DCIM + "/czcg/watermark/" + imgName);
+        if (!fileWater.getParentFile().exists())
+            fileWater.getParentFile().mkdirs();
+        String path = fileWater.getPath();
+        WaterMarkUtil.of(context).saveBitmapFile(watermark, path);
+        // 保存数据
+        image.setWatermarkPath(path);
+        continueWatermark(image, true);
     }
 
 
-    private void continueWatermark(TImage image, String... message) {
+    private void continueWatermark(TImageWatermark image, boolean preSuccess, String... message) {
+        image.setWatermark(preSuccess);
         int index = images.indexOf(image);
         boolean isLast;
         if (index == images.size() - 1) {

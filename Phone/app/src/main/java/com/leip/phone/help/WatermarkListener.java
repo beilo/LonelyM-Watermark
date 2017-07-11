@@ -1,7 +1,5 @@
 package com.leip.phone.help;
 
-import com.jph.takephoto.model.TImage;
-
 import java.util.ArrayList;
 
 /**
@@ -19,13 +17,13 @@ public interface WatermarkListener {
          * 压缩成功
          * @param images 已经添加水印图片
          */
-        void onWatermarkSuccess(ArrayList<TImage> images);
+        void onWatermarkSuccess(ArrayList<TImageWatermark> images);
 
         /**
          * 添加失败
          * @param images 压缩失败的图片
          * @param msg 失败的原因
          */
-        void onWatermarkFailed(ArrayList<TImage> images, String msg);
+        void onWatermarkFailed(ArrayList<TImageWatermark> images, String msg);
     }
 }
