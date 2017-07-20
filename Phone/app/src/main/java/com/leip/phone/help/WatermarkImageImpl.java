@@ -60,8 +60,8 @@ public class WatermarkImageImpl implements WatermarkListener {
         View viewLayout = mInflater.inflate(R.layout.view_item, null);
 
 
-        Bitmap watermark = WaterMarkUtil.of(context).createViewWatermark(bitmap,viewLayout);//添加水印
-//        Bitmap watermark = WaterMarkUtil.of(context).createWatermark(bitmap, "hahahah", "11111111", 0);//添加水印
+//        Bitmap watermark = WaterMarkUtil.of(context).createViewWatermark(bitmap,viewLayout);//添加水印
+        Bitmap watermark = WaterMarkUtil.of(context).createWatermark(bitmap, "hahahah", "11111111", 0);//添加水印
         // 保存图片
         File fileWater = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DCIM + "/czcg/watermark/" + imgName);

@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -125,11 +126,7 @@ public class WaterMarkUtil {
         //保存所有元素
         canvas.save(Canvas.ALL_SAVE_FLAG);
         canvas.restore();
-        if (!bitmap.isRecycled()) {
-            // 回收并且置为null
-            bitmap.recycle();
-            bitmap = null;
-        }
+        bitMapRecycle(bitmap);
         return bmp;
     }
 
@@ -137,17 +134,6 @@ public class WaterMarkUtil {
         if (view == null) {
             return bitmap;
         }
-        // 获取图片的宽高
-        int bitmapWidth = bitmap.getWidth();
-        int bitmapHeight = bitmap.getHeight();
-        //
-        // 创建一个和图片一样大的背景图
-        Bitmap bmp = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmp);
-        // 画背景图
-        canvas.drawBitmap(bitmap, 0, 0, null);
-        canvas.save();
-        // 轮询view的节点
         ViewGroup vg = (ViewGroup) view;
         for (int i = 0; i < vg.getChildCount(); i++) {
             View childAt = vg.getChildAt(i);
@@ -160,26 +146,59 @@ public class WaterMarkUtil {
         // 设置最小高宽
         view.setMinimumWidth(bitmap.getWidth());
         view.setMinimumHeight(bitmap.getHeight());
-        // 设置测量尺寸
-        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        // 创建一个跟view一样大小的空bitmap
-        Bitmap bitmapView = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
-                Bitmap.Config.ARGB_8888);
-        canvas.drawBitmap(bitmapView, 0, 0, null);
-        // 设置view相对于父类的位置
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-        // 执行绘画view
-        view.draw(canvas);
-        canvas.save(Canvas.ALL_SAVE_FLAG);
-        canvas.restore();
-        if (!bitmap.isRecycled()) {
-            // 回收并且置为null
-            bitmap.recycle();
-            bitmap = null;
+
+
+        Bitmap bitmapView = loadBitmapFromView(view);
+        if (bitmapView == null) {
+            return bitmap;
         }
-        return bmp;
+
+        Bitmap waBitmap = addWaterMark(bitmap, bitmapView);
+        if (waBitmap == null) {
+            return bitmap;
+        }
+        bitMapRecycle(bitmap);
+        return waBitmap;
+    }
+
+
+    @Nullable
+    public Bitmap loadBitmapFromView(@NonNull View view) {
+        if (view == null) {
+            return null;
+        }
+        try {
+            view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
+                    Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+            view.draw(canvas);
+            return bitmap;
+        } catch (Exception ex) {
+            return null;
+        }
 
     }
+
+    @Nullable
+    public Bitmap addWaterMark(@NonNull Bitmap src, @NonNull Bitmap waterMark) {
+        if (src == null || waterMark == null) {
+            return null;
+        }
+        try {
+            int w = src.getWidth();
+            int h = src.getHeight();
+            Bitmap result = Bitmap.createBitmap(w, h, src.getConfig());
+            Canvas canvas = new Canvas(result);
+            canvas.drawBitmap(src, 0, 0, null);
+            canvas.drawBitmap(waterMark, 0, 0, null);
+            return result;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
 
     // Bitmap对象保存图片文件
     public void saveBitmapFile(Bitmap bitmap, String url) {
@@ -199,11 +218,20 @@ public class WaterMarkUtil {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(!bitmap.isRecycled()){
+            if (!bitmap.isRecycled()) {
                 // 回收并且置为null
                 bitmap.recycle();
                 bitmap = null;
             }
+        }
+    }
+
+
+    private void bitMapRecycle(Bitmap bitmap){
+        if (!bitmap.isRecycled()) {
+            // 回收并且置为null
+            bitmap.recycle();
+            bitmap = null;
         }
     }
 }

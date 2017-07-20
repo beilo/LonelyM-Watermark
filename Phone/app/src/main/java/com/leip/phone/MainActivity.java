@@ -2,16 +2,14 @@ package com.leip.phone;
 
 import android.content.Context;
 import android.content.Intent;
-import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -29,8 +27,6 @@ import com.leip.phone.help.WatermarkListener;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 
 
 
@@ -39,19 +35,29 @@ public class MainActivity extends AppCompatActivity implements TakePhoto.TakeRes
     private Context context;
 
     private ImageView imageView;
+    private Button btn_photo;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         getTakePhoto().onCreate(savedInstanceState);
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_main);
         imageView = (ImageView) findViewById(R.id.img);
+        btn_photo = (Button) findViewById(R.id.btn_photo);
+        btn_photo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                photo(v);
+            }
+        });
         context = this;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void photo(View view) {
-        String timeteamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CANADA).format(new Date());
+//        String timeteamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CANADA).format(new Date());
+        String timeteamp = String.valueOf(System.currentTimeMillis());
         String imageFileName = "CZCG_JPEG_" + timeteamp + ".png";
         File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM + "_Original_" + imageFileName);
         Uri uri = Uri.fromFile(file);

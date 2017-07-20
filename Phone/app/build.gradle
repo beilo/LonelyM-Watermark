@@ -39,4 +39,6 @@ dependencies {
     compile(name:'bridge-1.0.0-20170423.045130-1',ext:'aar')
 
     compile 'br.com.duanniston:watermarklib:0.0.4'
+
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
 }

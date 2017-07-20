@@ -8,11 +8,11 @@
     tools:context="com.leip.phone.MainActivity">
 
     <Button
+        android:id="@+id/btn_photo"
         android:textSize="24dp"
         android:text="拍照"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="photo"
         />
 
     <ImageView
